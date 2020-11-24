@@ -1,0 +1,81 @@
+#!/bin/bash
+
+# Examples from https://github.com/Azure/bicep
+
+# 0. Login to your Azure subscription and select the working account 
+az login
+az account list --output table
+az account set --subscription "Mariusz - MS Internal Consumption"
+
+
+# 1. Compile an empty bicep file
+bicep build main.bicep
+
+
+# 2. Add a resource and compile the bicep file
+resource stg 'Microsoft.Storage/storageAccounts@2019-06-01' = {
+    name: 'uniquestorage001' // must be globally unique
+    location: 'eastus'
+    kind: 'Storage'
+    sku: {
+        name: 'Standard_LRS'
+    }
+}
+
+
+# 3. Add parameters
+param location string = 'eastus'
+param name string = 'mkuniquestorage001' // must be globally unique
+
+
+# 4. Add variables and outputs
+var storageSku = 'Standard_LRS' // declare variable and assign value
+output storageId string = stg.id // output resourceId of storage account
+
+
+# 5. Compile your bicep file and deploy the template to a resource group
+bicep build ./main.bicep
+
+# Via AZ CLI:
+az group create -n mybicep-rg -l eastus --verbose # optional - create resource group 'my-rg'
+az group show -n mybicep-rg # check the G was created
+
+az deployment group what-if -f ./main.json -g mybicep-rg --verbose # Do a what-if deployment = TF Plan
+az deployment group create -f ./main.json -g mybicep-rg --verbose
+az deployment group list -g mybicep-rg
+az deployment group what-if -f ./main.json -g mybicep-rg # Do a what-if deployment = TF Plan
+
+
+# 6. Pass parameters on the command line
+az deployment group create -f ./main.json -g mybicep-rg --parameters location=westus name=mklogstorage001
+
+
+# 7. Modules
+bicep build ./main2.bicep
+
+az group create -n mybicep-rg -l eastus --verbose
+az deployment group what-if -f ./main2.json -g mybicep-rg --parameters location=westus name=mkstoragemudule003
+az deployment group create -f ./main2.json -g mybicep-rg --parameters location=westus name=mkstoragemudule003
+
+
+# 8. Template Spec Create
+az ts create \
+  --name storageSpec \
+  --version "1.0" \
+  --resource-group mybicep-rg \
+  --location "westus" \
+  --template-file "c:\git\bicep\main.json"
+
+
+# 8. Template Spec Deploy
+id=$(az ts show --name storageSpec --resource-group mybicep-rg --version "1.0" --query "id")
+
+az deployment group what-if \
+  --resource-group mybicep-rg \
+  --template-spec $id \
+  --parameters location=westus name=mkstoragemudule002
+
+  az deployment group create \
+  --resource-group mybicep-rg \
+  --template-spec $id \
+  --parameters location=westus name=mkstoragemudule002

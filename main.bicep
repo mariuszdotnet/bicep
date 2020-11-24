@@ -1,14 +1,14 @@
-param location string = resourceGroup().location
+param location string = 'eastus'
 param name string = 'mkuniquestorage001' // must be globally unique
 
 var storageSku = 'Standard_LRS' // declare variable and assign value
 
 resource stg 'Microsoft.Storage/storageAccounts@2019-06-01' = {
-    name: name
+    name: name // must be globally unique
     location: location
     kind: 'Storage'
     sku: {
-        name: storageSku // reference variable
+        name: storageSku
     }
 }
 
