@@ -38,7 +38,7 @@ bicep build ./main.bicep
 
 # Via AZ CLI:
 az group create -n mybicep-rg -l eastus --verbose # optional - create resource group 'my-rg'
-az group show -n mybicep-rg # check the G was created
+az group show -n mybicep-rg # check the RG was created
 
 az deployment group what-if -f ./main.json -g mybicep-rg --verbose # Do a what-if deployment = TF Plan
 az deployment group create -f ./main.json -g mybicep-rg --verbose
