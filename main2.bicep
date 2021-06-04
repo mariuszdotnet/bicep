@@ -1,10 +1,18 @@
 param location string = resourceGroup().location
-param name string
+param backupStorage bool = false
 
 module storage './storage.bicep' = {
-  name: 'storageDeployment'
+  name: 'storageDeploymentMain'
   params:{
     location: location
-    name: name
+    name: 'mkuniquestorage01'
+  }
+}
+
+module storageBackup './storage.bicep' = if(backupStorage) {
+  name: 'storageDeploymentBackup'
+  params:{
+    location: location
+    name: 'mkuniquestorage02'
   }
 }

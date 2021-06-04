@@ -70,6 +70,8 @@ az ts create \
 # 8. Template Spec Deploy
 id=$(az ts show --name storageSpec --resource-group mybicep-rg --version "1.0" --query "id")
 
+$id
+
 az deployment group what-if \
   --resource-group mybicep-rg \
   --template-spec $id \
@@ -79,3 +81,12 @@ az deployment group what-if \
   --resource-group mybicep-rg \
   --template-spec $id \
   --parameters location=westus name=mkstoragemudule002
+
+
+  # Conditional Deployment
+  # https://docs.microsoft.com/en-us/azure/azure-resource-manager/bicep/conditional-resource-deployment
+bicep build ./main2.bicep
+
+az group create -n mybicep-rg -l eastus --verbose
+az deployment group what-if -f ./main2.json -g mybicep-rg --parameters location=eastus backupStorage=true
+az deployment group create -f ./main2.json -g mybicep-rg --parameters location=eastus backupStorage=true
